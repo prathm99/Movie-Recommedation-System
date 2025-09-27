@@ -1,26 +1,80 @@
 Movie Recommendation System (Content-Based Filtering) --
 
-A Streamlit-based movie recommender app using The Movie Database (TMDb) datasets, designed to recommend movies to users based on a selected movie, showing similar titles and fetching their posters.
+1. Project Overview
+
+A Streamlit-based movie recommender app using The Movie Database (TMDb) datasets, designed to recommend top 5 most similar titles along with their posters.
 The system recommends movies similar to a selected title using content-based filtering.
 
 
-Approach:
+2. Data Preparation
+  Loading datasets: Read movies.csv and credits.csv into pandas DataFrames.
+  
+  Merging: Joined on the common id field to consolidate metadata (genres, overview) with cast & crew information.
+  
+  Handling missing data: Filled or dropped nulls to ensure completeness before feature extraction.
 
-Merged TMDb movie & credits datasets.
+3. Feature Engineering
+  Parsing JSON columns:
+  
+  genres, keywords, cast, crew are JSON-encoded strings.
+  
+  Extracted only the names (e.g., genre names, top 3 cast members, director).
+  
+  Text preprocessing:
+  
+  Converted all text to lowercase.
+  
+  Removed spaces within multi-word tags (e.g., "science fiction" → "sciencefiction") to treat each as a single token.
+  
+  Combined “tags”:
+  
+  Concatenated genres + keywords + cast + crew + overview into a single string per movie.
 
-Preprocessed genres, keywords, cast, crew, and overview.
+4. Vectorization & Similarity
+  CountVectorizer:
+  
+  Fitted on the combined “tags” corpus (max features ≈ 5000).
+  
+  Transformed each movie’s tags into a vector of token counts.
+  
+  Cosine Similarity:
+  
+  Computed pairwise cosine similarity matrix on the CountVectorizer output.
+  
+  Stored as a NumPy array for fast lookups.
 
-Created a combined "tags" column for each movie.
+5. Model Persistence
+  Pickle serialization:
+  
+  Saved the DataFrame of movie metadata, the similarity matrix, and the fitted CountVectorizer to disk.
+  
+  Enables instant loading in the Streamlit app without reprocessing.
 
-Used CountVectorizer for text vectorization and cosine similarity for similarity computation.
+6. Streamlit App
+  Interface:
+  
+  Dropdown menu lists all movie titles.
+  
+  User selects a movie and clicks “Recommend.”
+  
+  Backend logic:
+  
+  Loads pickled objects.
+  
+  Finds the index of the selected title.
+  
+  Retrieves similarity scores for that index, sorts them, and picks the top 5.
+  
+  Dynamically fetches poster URLs using TMDb’s image base URL and the recommended movie IDs.
 
-Stored precomputed similarity matrix and movie metadata with pickle for fast loading.
+7. Technologies & Libraries
+Python 3.x, pandas, NumPy
 
-Fetched movie posters dynamically from TMDb API.
+scikit-learn’s CountVectorizer & cosine_similarity
 
-Tech Stack: Python, Pandas, CountVectorizer, Cosine Similarity, Pickle, Streamlit, TMDb API.
-Filtering Type: Content-Based Filtering (metadata similarity).
-Result: Given a movie, the app recommends 5 similar movies with poster previews.
+pickle for serialization
 
+Streamlit for front-end
 
+TMDb API for poster images
 
